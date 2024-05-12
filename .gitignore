@@ -1,160 +1,210 @@
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-*$py.class
+import sys
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QListWidget, QLabel, QLineEdit, QMessageBox, QDialog, QComboBox, QTextEdit
 
-# C extensions
-*.so
+class AplikasiKuliner(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Aplikasi Wisata Kuliner")
+        self.setGeometry(100, 100, 400, 400)
 
-# Distribution / packaging
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-share/python-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
+        self.init_ui()
 
-# PyInstaller
-#  Usually these files are written by a python script from a template
-#  before PyInstaller builds the exe, so as to inject date/other infos into it.
-*.manifest
-*.spec
+    def init_ui(self):
+        # Meminta nama panggilan pengguna saat aplikasi dibuka
+        self.nama_pengguna = self.get_nama_pengguna()
 
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
+        # Membuat layout utama
+        layout = QVBoxLayout()
 
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.nox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-*.py,cover
-.hypothesis/
-.pytest_cache/
-cover/
+        # Membuat label judul
+        self.label_title = QLabel(f"Selamat Datang {self.nama_pengguna}, di Aplikasi Wisata Kuliner")
+        layout.addWidget(self.label_title)
 
-# Translations
-*.mo
-*.pot
+        # Membuat combo box untuk memilih daerah
+        self.combo_daerah = QComboBox()
+        self.combo_daerah.addItems(["Balikpapan Timur", "Balikpapan Barat", "Balikpapan Selatan", "Balikpapan Utara", "Balikpapan Tengah"])
+        layout.addWidget(self.combo_daerah)
 
-# Django stuff:
-*.log
-local_settings.py
-db.sqlite3
-db.sqlite3-journal
+        # Membuat combo box untuk memilih daerah
+        self.combo_jenis = QComboBox()
+        self.combo_jenis.addItems(["Makanan Berat", "Makanan Ringan", "Minuman"])
+        layout.addWidget(self.combo_jenis)
 
-# Flask stuff:
-instance/
-.webassets-cache
+        # Membuat list widget untuk daftar tempat kuliner
+        self.list_widget = QListWidget()
+        layout.addWidget(self.list_widget)
 
-# Scrapy stuff:
-.scrapy
+        # Membuat tombol untuk menampilkan detail tempat kuliner terpilih
+        tmbl_detail = QPushButton("Tampilkan Detail")
+        tmbl_detail.clicked.connect(self.tampilkan_detail)
+        layout.addWidget(tmbl_detail)
 
-# Sphinx documentation
-docs/_build/
+        # Menambahkan layout untuk menampilkan detail tempat kuliner
+        self.layout_detail = QVBoxLayout()
 
-# PyBuilder
-.pybuilder/
-target/
+        # Membuat label untuk menampilkan detail tempat kuliner terpilih
+        self.label_detail = QLabel("")
+        self.layout_detail.addWidget(self.label_detail)
 
-# Jupyter Notebook
-.ipynb_checkpoints
+        layout.addLayout(self.layout_detail)
 
-# IPython
-profile_default/
-ipython_config.py
+        # Membuat tombol untuk menambah tempat kuliner baru
+        tmbl_tambah = QPushButton("Tambah Tempat Kuliner Baru")
+        tmbl_tambah.clicked.connect(self.tambah_kuliner)
+        layout.addWidget(tmbl_tambah)
 
-# pyenv
-#   For a library or package, you might want to ignore these files since the code is
-#   intended to run in multiple environments; otherwise, check them in:
-# .python-version
+        # Menambahkan layout utama ke window
+        self.setLayout(layout)
 
-# pipenv
-#   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
-#   However, in case of collaboration, if having platform-specific dependencies or dependencies
-#   having no cross-platform support, pipenv may install dependencies that don't work, or not
-#   install all needed dependencies.
-#Pipfile.lock
+        # Mengatur tempat kuliner untuk setiap daerah dan jenis
+        self.tempat_kuliner = {
+            "Balikpapan Timur": {
+                "Makanan Berat": [("Nasi Goreng", "Lokasi di dekat PJHI, depan Starbuck Mulawarman."),
+                                  ("Mie Goreng Cak Shodik", "Rp 20.000 per porsi, samping gang SPBU Batakan, berjarak 200m dari jalan raya."),
+                                  ("Nasi Padang", "Rp 25.000 per porsi, depan Thiess.")],
+                "Makanan Ringan": [("Kue Lumpur", "Rp 3.000 per kue, lokasi di Pasar Manggar"),
+                                   ("Batagor & Salome", "Samping jalan raya sekitar Stadion Batakan"),
+                                   ("Aneka Gorengan", "Rp 3.000 per gorengan, lokasi dekat Indomaret Batakan.")],
+                "Minuman": [("Es Doger", "Rp 4.000 per minuman, lokasi depan SDN 005."),
+                            ("Es Jeruk", "Rp 6.000 per minuman, lokasi samping gang SPBU Batakan."),
+                            ("Es Kelapa Muda", "Rp 5.000, lokasi jalan sekitar Pantai Manggar.")]
+            },
+            "Balikpapan Barat": {
+                "Makanan Berat": [("Soto Ayam H.Ali", "Rp 20.000, lokasi di Kebun Sayur.")],
+                "Makanan Ringan": [("Lisda Bakery", "Toko yang menyajikan beragam kue dengan beragamm rasa dan harga, daerah Marga Sari.")],
+                "Minuman": [("Es Teler", "Rp 10.000, lokasi samping gereja katolik.")]
+            },
+            "Balikpapan Selatan": {
+                "Makanan Berat": [("Seafood Dandito", "Restoran yang populer dengan sajian kepitingnya.")],
+                "Makanan Ringan": [("Toko Kue", "Toko yang menyajikan beragam kue dengan beragamm rasa dan harga.")],
+                "Minuman": [("Puan Kopi", "Kafe yang berlokasi di pinggir pantai, populer di kalangan remaja dewasa.")],
+            },
+            "Balikpapan Utara": {
+                "Makanan Berat": [("Waroeng Rahmad", "Warung yang menyajikan berbagai hidangan yang bisa dipilih porsinya.")],
+                "Makanan Ringan": [("Salome Pentol Granat", "Berlokasi di jalan menuju kamput ITK, depan Toko Giska.")],
+                "Minuman": [("Teh IKN Nusantara", "Menyajikan minuman dengan berbagai rasa dan harga, populer di kalangan mahasiswa ITK.")]
+            },
+            "Balikpapan Tengah": {
+                "Makanan Berat": [("Teluk Bayur Seafood", "Berlokasi di Jl. Ahmad Yani.")],
+                "Makanan Ringan": [("Holland Bakery Gunun Sari", "Berlokasi di Jl. Ahmad Yani samping Bank CIMB Niaga.")],
+                "Minuman": [("Kedai Kopi Hitam Manis", "Rp 25.000-50.000 per orang, sangat populer di kalangan anak muda pada malam hari.")]
+            }
+        }
 
-# poetry
-#   Similar to Pipfile.lock, it is generally recommended to include poetry.lock in version control.
-#   This is especially recommended for binary packages to ensure reproducibility, and is more
-#   commonly ignored for libraries.
-#   https://python-poetry.org/docs/basic-usage/#commit-your-poetrylock-file-to-version-control
-#poetry.lock
+        # Mengatur event untuk mengubah daftar tempat kuliner saat daerah dipilih
+        self.combo_daerah.currentIndexChanged.connect(self.daerah_terpilih)
+        self.combo_jenis.currentIndexChanged.connect(self.jenis_terpilih)
 
-# pdm
-#   Similar to Pipfile.lock, it is generally recommended to include pdm.lock in version control.
-#pdm.lock
-#   pdm stores project-wide configurations in .pdm.toml, but it is recommended to not include it
-#   in version control.
-#   https://pdm.fming.dev/#use-with-ide
-.pdm.toml
+    def get_nama_pengguna(self):
+        # Membuat dialog untuk meminta nama panggilan pengguna
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Masukkan Nama Panggilan")
+        dialog.setGeometry(200, 200, 300, 100)
 
-# PEP 582; used by e.g. github.com/David-OConnor/pyflow and github.com/pdm-project/pdm
-__pypackages__/
+        layout = QVBoxLayout()
 
-# Celery stuff
-celerybeat-schedule
-celerybeat.pid
+        # Membuat label dan line edit untuk memasukkan nama panggilan
+        label_nama = QLabel("Nama Panggilan:")
+        layout.addWidget(label_nama)
+        edit_nama = QLineEdit()
+        layout.addWidget(edit_nama)
 
-# SageMath parsed files
-*.sage.py
+        # Membuat tombol OK
+        tmbl_ok = QPushButton("OK")
+        tmbl_ok.clicked.connect(dialog.accept)
+        layout.addWidget(tmbl_ok)
 
-# Environments
-.env
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
+        dialog.setLayout(layout)
 
-# Spyder project settings
-.spyderproject
-.spyproject
+        # Menampilkan dialog dan mengembalikan nama panggilan
+        if dialog.exec_() == QDialog.Accepted:
+            return edit_nama.text() or "Pengguna"
+        else:
+            return "Pengguna"
 
-# Rope project settings
-.ropeproject
+    def tampilkan_detail(self):
+        # Mendapatkan item terpilih dari list
+        item_terpilih = self.list_widget.currentItem()
+        if item_terpilih:
+            detail = item_terpilih.data(1000)  # 1000 adalah Role kustom untuk menyimpan detail
+            if detail:
+                self.label_detail.setText(detail)
+            else:
+                self.label_detail.setText("Detail belum ditambahkan.")
+        else:
+            QMessageBox.warning(self, "Peringatan", "Pilih salah satu tempat kuliner terlebih dahulu.")
 
-# mkdocs documentation
-/site
+    def tambah_kuliner(self):
+        # Membuat dialog untuk menambah tempat kuliner baru
+        dialog = QDialog()
+        dialog.setWindowTitle("Tambah Tempat Kuliner Baru")
+        dialog.setGeometry(200, 200, 300, 200)
 
-# mypy
-.mypy_cache/
-.dmypy.json
-dmypy.json
+        layout = QVBoxLayout()
 
-# Pyre type checker
-.pyre/
+        # Membuat label dan line edit untuk nama tempat kuliner baru
+        label_nama = QLabel("Nama Tempat Kuliner:")
+        layout.addWidget(label_nama)
+        edit_nama = QLineEdit()
+        layout.addWidget(edit_nama)
 
-# pytype static type analyzer
-.pytype/
+        # Membuat label dan text edit untuk detail tempat kuliner baru
+        label_detail = QLabel("Detail Tempat Kuliner:")
+        layout.addWidget(label_detail)
+        edit_detail = QTextEdit()
+        layout.addWidget(edit_detail)
 
-# Cython debug symbols
-cython_debug/
+        # Membuat tombol untuk menambah tempat kuliner
+        tmbl_ok = QPushButton("Tambah")
+        tmbl_ok.clicked.connect(lambda: self.tambah_kuliner_aksi(dialog, edit_nama.text(), edit_detail.toPlainText()))
+        layout.addWidget(tmbl_ok)
 
-# PyCharm
-#  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
-#  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
-#  and can be added to the global gitignore or merged into this file.  For a more nuclear
-#  option (not recommended) you can uncomment the following to ignore the entire idea folder.
-#.idea/
+        dialog.setLayout(layout)
+        dialog.exec_()
+
+    def tambah_kuliner_aksi(self, dialog, nama, detail):
+        # Menambah tempat kuliner baru ke list
+        if nama:
+            if detail:
+                daerah_terpilih = self.combo_daerah.currentText()
+                jenis_terpilih = self.combo_jenis.currentText()
+                self.list_widget.addItem(nama)
+                self.tempat_kuliner[daerah_terpilih][jenis_terpilih].append((nama, detail))
+                self.list_widget.item(self.list_widget.count() - 1).setData(1000, detail)  # Menyimpan detail dengan Role kustom
+                dialog.close()
+            else:
+                QMessageBox.warning(dialog, "Peringatan", "Detail tempat kuliner tidak boleh kosong.")
+        else:
+            QMessageBox.warning(dialog, "Peringatan", "Nama tempat kuliner tidak boleh kosong.")
+
+    def daerah_terpilih(self, index):
+        # Membersihkan daftar tempat kuliner sebelumnya
+        self.list_widget.clear()
+        # Memperbarui daftar tempat kuliner berdasarkan daerah yang dipilih
+        daerah_terpilih = self.combo_daerah.currentText()
+        tempat_kuliner_daerah = self.tempat_kuliner[daerah_terpilih][self.combo_jenis.currentText()]
+        for nama, detail in tempat_kuliner_daerah:
+            self.list_widget.addItem(nama)  # Menambahkan nama tempat kuliner
+            self.list_widget.item(self.list_widget.count() - 1).setData(1000, detail)  # Menyimpan detail dengan Role kustom
+        self.label_detail.clear()
+
+    def jenis_terpilih(self, index):
+        # Membersihkan daftar tempat kuliner sebelumnya
+        self.list_widget.clear()
+
+        # Memperbarui daftar tempat kuliner berdasarkan jenis makanan yang dipilih
+        jenis_terpilih = self.combo_jenis.currentText()
+        tempat_kuliner_jenis = self.tempat_kuliner[self.combo_daerah.currentText()][jenis_terpilih]
+
+        # Menambahkan tempat kuliner ke list widget
+        for nama, detail in tempat_kuliner_jenis:
+            self.list_widget.addItem(nama)  # Menambahkan nama tempat kuliner
+            self.list_widget.item(self.list_widget.count() - 1).setData(1000, detail)  # Menyimpan detail dengan Role kustom
+        self.label_detail.clear()
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    window = AplikasiKuliner()
+    window.show()
+    sys.exit(app.exec_())
+
